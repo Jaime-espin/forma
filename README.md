@@ -1,0 +1,1 @@
+Personal training-data lab. Pulls my activity history from the Strava API, applies fitness and fatigue models (Banister-style training load) to my own data, and grows toward an AI coach. Data layer first.
