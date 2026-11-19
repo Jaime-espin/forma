@@ -113,6 +113,19 @@ def insertar_streams(streams_puntos):
     conn.commit()
     conn.close()
 
+def obtener_actividades(limite=50):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT * FROM activities
+        ORDER BY start_date DESC
+        LIMIT ?
+    ''', (limite,))
+    actividades = [dict(fila) for fila in cursor.fetchall()]
+
+    conn.close()
+    return actividades
 
 
 if __name__ == '__main__':

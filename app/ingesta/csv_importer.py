@@ -51,7 +51,7 @@ def transformar_fila(fila):
     return {
         'id': limpiar_int(fila.get('ID de actividad')),
         'name': fila.get('Nombre de la actividad'),
-        'activity_type': fila.get('Tipo de actividad'),
+        'activity_type': deducir_tipo_deporte(fila.get('Tipo de actividad'),fila.get('Etiqueta')),
         'start_date': parsear_fecha(fila['Fecha de la actividad']),
         'elapsed_time': limpiar_int(fila.get('Tiempo transcurrido')),
         'moving_time': limpiar_int(fila.get('Tiempo en movimiento')),
@@ -92,6 +92,21 @@ def get_columnas():
             texto_f = io.TextIOWrapper(f, encoding='utf-8')
             lector = csv.DictReader(texto_f)
             print(lector.fieldnames)
+
+def deducir_tipo_deporte(tipo_base, etiqueta):
+    etiqueta = (etiqueta or '').lower()
+    
+    if tipo_base == 'Carrera':
+        if 'offroad' in etiqueta:
+            return 'Trail Running'
+        return 'Carrera'
+    
+    if tipo_base == 'Bicicleta':
+        if 'offroad' in etiqueta:
+            return 'Gravel / MTB'
+        return 'Ciclismo'
+    
+    return tipo_base
 
 
 if __name__ == '__main__':

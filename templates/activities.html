@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2 style="margin: 0; font-size: 1.5rem;">Historial de Actividades</h2>
+    <span style="color: var(--muted); font-size: 0.9rem;">Últimas {{ actividades|length }} actividades</span>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Deporte</th>
+            <th>Nombre</th>
+            <th style="text-align: right;">Distancia</th>
+            <th style="text-align: right;">Tiempo</th>
+            <th style="text-align: right;">Desnivel</th>
+            <th style="text-align: right;">FC Media</th>
+            <th style="text-align: right;">Esfuerzo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for act in actividades %}
+        <tr>
+            <!-- Fecha -->
+            <td class="metric-num" style="color: var(--muted); white-space: nowrap;">
+                {{ act.start_date[:10] }}
+            </td>
+
+            <!-- Tipo de deporte -->
+            <td>
+                <span class="badge">{{ act.activity_type }}</span>
+            </td>
+
+            <!-- Nombre -->
+            <td style="font-weight: 500;">
+                {{ act.name }}
+            </td>
+
+            <!-- Distancia en km -->
+            <td class="metric-num" style="text-align: right;">
+                {% if act.distance %}
+                    {{ (act.distance / 1000) | round(2) }} km
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <!-- Tiempo en movimiento (minutos u horas) -->
+            <td class="metric-num" style="text-align: right;">
+                {% if act.moving_time %}
+                    {% set horas = (act.moving_time // 3600) %}
+                    {% set mins = ((act.moving_time % 3600) // 60) %}
+                    {% if horas > 0 %}
+                        {{ horas }}h {{ mins }}m
+                    {% else %}
+                        {{ mins }}m
+                    {% endif %}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <!-- Desnivel positivo -->
+            <td class="metric-num" style="text-align: right;">
+                {% if act.elevation_gain %}
+                    +{{ act.elevation_gain | round(0) | int }} m
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <!-- FC Media -->
+            <td class="metric-num" style="text-align: right;">
+                {% if act.avg_heart_rate %}
+                    {{ act.avg_heart_rate | round(0) | int }} ppm
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <!-- Esfuerzo Relativo -->
+            <td class="metric-num" style="text-align: right; color: var(--accent); font-weight: 600;">
+                {% if act.relative_effort %}
+                    {{ act.relative_effort | round(0) | int }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="8" style="text-align: center; color: var(--muted); padding: 2rem;">
+                No hay actividades registradas en la base de datos.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
