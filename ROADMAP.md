@@ -48,7 +48,7 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 - [x] Lista de actividades con métricas clave (distancia, tiempo, desnivel, FC, tipo refinado)
 - [x] Detalle de actividad: métricas + gráfica de pulso y altitud con Chart.js (carga bajo demanda del stream)
 - [ ] Dashboard principal: resumen semanal, volumen por deporte, tendencias
-- [ ] Visualización de curvas CTL/ATL/TSB en el tiempo (Fase 2)
+- [x] Visualización de curvas CTL/ATL/TSB en el tiempo (Fase 2) con gráfica interactiva PMC y guía de zonas
 
 ---
 

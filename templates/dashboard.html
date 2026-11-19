@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="font-size: 1.75rem; margin: 0 0 0.5rem 0; color: var(--text);">Dashboard de Rendimiento</h2>
+    <p style="color: var(--muted); margin: 0; font-size: 0.95rem;">
+        Modelo Banister / Coggan (CTL, ATL, TSB) calculado a partir de tu historial de entrenamiento.
+    </p>
+</div>
+
+<!-- Tarjetas de Estado Actual -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <!-- CTL / Fitness -->
+    <div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em;">
+                Fitness (CTL)
+            </span>
+            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: #38bdf8; display: inline-block;"></span>
+        </div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: #38bdf8; line-height: 1.2;">
+            {{ metrics.ctl | default(0) }}
+        </div>
+        <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.35rem;">
+            Carga crónica (ventana de ~42 días)
+        </div>
+    </div>
+
+    <!-- ATL / Fatiga -->
+    <div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em;">
+                Fatiga (ATL)
+            </span>
+            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: #f43f5e; display: inline-block;"></span>
+        </div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: #f43f5e; line-height: 1.2;">
+            {{ metrics.atl | default(0) }}
+        </div>
+        <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.35rem;">
+            Carga aguda (ventana de ~7 días)
+        </div>
+    </div>
+
+    <!-- TSB / Forma -->
+    {% set tsb = metrics.tsb | default(0) %}
+    {% if tsb > 20 %}
+        {% set tsb_color = '#94a3b8' %}
+        {% set tsb_status = 'Transición / Descanso prolongado' %}
+    {% elif tsb >= 5 %}
+        {% set tsb_color = '#10b981' %}
+        {% set tsb_status = 'Frescura óptima (Competición)' %}
+    {% elif tsb >= -10 %}
+        {% set tsb_color = '#38bdf8' %}
+        {% set tsb_status = 'Entrenamiento productivo' %}
+    {% elif tsb >= -30 %}
+        {% set tsb_color = '#f59e0b' %}
+        {% set tsb_status = 'Sobrecarga / Fatiga acumulada' %}
+    {% else %}
+        {% set tsb_color = '#ef4444' %}
+        {% set tsb_status = 'Alta fatiga (Riesgo sobreentrenamiento)' %}
+    {% endif %}
+
+    <div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em;">
+                Forma (TSB)
+            </span>
+            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: {{ tsb_color }}; display: inline-block;"></span>
+        </div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: {{ tsb_color }}; line-height: 1.2;">
+            {% if tsb > 0 %}+{% endif %}{{ tsb }}
+        </div>
+        <div style="font-size: 0.8rem; color: {{ tsb_color }}; margin-top: 0.35rem; font-weight: 500;">
+            {{ tsb_status }}
+        </div>
+    </div>
+
+    <!-- TSS Diario más reciente -->
+    <div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em;">
+                Último TSS ({{ metrics.date }})
+            </span>
+            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: #a855f7; display: inline-block;"></span>
+        </div>
+        <div style="font-size: 2.25rem; font-weight: 700; color: #a855f7; line-height: 1.2;">
+            {{ metrics.tss | default(0) }}
+        </div>
+        <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.35rem;">
+            hrTSS con LTHR = {{ lthr | default(175) }} ppm
+        </div>
+    </div>
+</div>
+
+<!-- Gráfica de Rendimiento (PMC) -->
+<div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+        <div>
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--text);">Performance Management Chart (PMC)</h3>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem;">
+                Evolución temporal de Fitness (CTL), Fatiga (ATL) y Forma (TSB)
+            </div>
+        </div>
+
+        <!-- Filtros de horizonte temporal -->
+        <div style="display: flex; gap: 0.5rem; background: var(--bg); padding: 0.25rem; border-radius: 6px; border: 1px solid var(--border);">
+            <button class="filter-btn" onclick="filtrarDias(30, this)">30D</button>
+            <button class="filter-btn active" onclick="filtrarDias(90, this)">90D</button>
+            <button class="filter-btn" onclick="filtrarDias(180, this)">180D</button>
+            <button class="filter-btn" onclick="filtrarDias(365, this)">1 Año</button>
+            <button class="filter-btn" onclick="filtrarDias(0, this)">Todo</button>
+        </div>
+    </div>
+
+    <div style="height: 420px; position: relative;">
+        <canvas id="pmcChart"></canvas>
+    </div>
+</div>
+
+<!-- Guía de Interpretación y Zonas de Rendimiento / Riesgo -->
+<div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+    <h3 style="margin: 0 0 1rem 0; font-size: 1.15rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem;">
+        <span>📖</span> Guía de Interpretación: Zonas de Forma (TSB) y Riesgo de Lesión
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <!-- Zona Óptima -->
+        <div style="border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05); padding: 0.85rem 1rem; border-radius: 0 6px 6px 0;">
+            <div style="font-weight: 600; color: #10b981; font-size: 0.9rem;">+5 a +20 | Frescura / Competición</div>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem;">
+                Máximo rendimiento disponible. La fatiga se ha disipado y el fitness permanece alto. Es la ventana ideal para el día de una carrera (tapering).
+            </div>
+        </div>
+
+        <!-- Zona Productiva -->
+        <div style="border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.05); padding: 0.85rem 1rem; border-radius: 0 6px 6px 0;">
+            <div style="font-weight: 600; color: #f59e0b; font-size: 0.9rem;">-10 a -30 | Sobrecarga Productiva</div>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem;">
+                Fatiga &gt; Fitness. Es la zona donde se producen las adaptaciones. Normal y necesaria durante semanas duras de carga antes de una descarga.
+            </div>
+        </div>
+
+        <!-- Zona Alto Riesgo -->
+        <div style="border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05); padding: 0.85rem 1rem; border-radius: 0 6px 6px 0;">
+            <div style="font-weight: 600; color: #ef4444; font-size: 0.9rem;">&lt; -30 | Alto Riesgo de Lesión</div>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem;">
+                Fatiga aguda extrema. Si se mantiene varios días, el riesgo de lesión neuromuscular o sobreentrenamiento se dispara. Conviene programar descanso activo o total.
+            </div>
+        </div>
+
+        <!-- Transición / Desentrenamiento -->
+        <div style="border-left: 4px solid #94a3b8; background: rgba(148, 163, 184, 0.05); padding: 0.85rem 1rem; border-radius: 0 6px 6px 0;">
+            <div style="font-weight: 600; color: #94a3b8; font-size: 0.9rem;">&gt; +25 | Desentrenamiento</div>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem;">
+                Demasiado descanso. La fatiga es nula pero el fitness (CTL) empieza a decaer significativamente por falta de estímulo.
+            </div>
+        </div>
+    </div>
+
+    <!-- Regla de oro de Ramp Rate -->
+    <div style="background-color: var(--bg); border: 1px dashed var(--border); border-radius: 6px; padding: 0.85rem 1.25rem; font-size: 0.85rem; color: var(--muted);">
+        <strong style="color: var(--text);"> Regla de oro del "Ramp Rate":</strong> 
+        Más que un día puntual de fatiga, el mayor predictor de lesión es la velocidad a la que sube tu Fitness (CTL). 
+        Un incremento de más de <strong style="color: #f59e0b;">5 a 7 puntos de CTL por semana</strong> aumenta drásticamente el riesgo de lesiones por sobreuso.
+    </div>
+</div>
+
+<style>
+    .filter-btn {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+    .filter-btn:hover {
+        color: var(--text);
+    }
+    .filter-btn.active {
+        background-color: var(--surface);
+        color: var(--primary);
+        font-weight: 600;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Todos los datos inyectados desde el backend Flask
+    const rawData = {{ chart_data | tojson }};
+    let chartInstance = null;
+
+    function renderChart(dias) {
+        let datosFiltrados = rawData;
+        if (dias > 0 && rawData.length > dias) {
+            datosFiltrados = rawData.slice(-dias);
+        }
+
+        const labels = datosFiltrados.map(d => d.date);
+        const ctlData = datosFiltrados.map(d => d.ctl);
+        const atlData = datosFiltrados.map(d => d.atl);
+        const tsbData = datosFiltrados.map(d => d.tsb);
+        const tssData = datosFiltrados.map(d => d.tss);
+
+        const ctx = document.getElementById('pmcChart').getContext('2d');
+
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Fitness (CTL)',
+                        data: ctlData,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.05)',
+                        borderWidth: 2.5,
+                        pointRadius: 0,
+                        tension: 0.2,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Fatiga (ATL)',
+                        data: atlData,
+                        borderColor: '#f43f5e',
+                        backgroundColor: 'rgba(244, 63, 94, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.2,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Forma (TSB)',
+                        data: tsbData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.2,
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'bar',
+                        label: 'TSS Diario',
+                        data: tssData,
+                        backgroundColor: 'rgba(168, 85, 247, 0.35)',
+                        hoverBackgroundColor: 'rgba(168, 85, 247, 0.8)',
+                        borderRadius: 2,
+                        yAxisID: 'yTss',
+                        barPercentage: 0.6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(51, 65, 85, 0.4)' },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 14 }
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        title: { display: true, text: 'Carga (CTL / ATL / TSB)', color: '#94a3b8' },
+                        grid: { color: 'rgba(51, 65, 85, 0.6)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    yTss: {
+                        type: 'linear',
+                        position: 'right',
+                        title: { display: true, text: 'TSS Diario', color: '#a855f7' },
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#a855f7' },
+                        suggestedMax: 200,
+                        min: 0
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#f8fafc',
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            footer: function(tooltipItems) {
+                                let tsbVal = tooltipItems.find(i => i.dataset.label === 'Forma (TSB)')?.raw;
+                                if (tsbVal !== undefined) {
+                                    if (tsbVal > 5) return 'Estado: Frescura / Competición';
+                                    if (tsbVal >= -10) return 'Estado: Productivo / Mantenimiento';
+                                    return 'Estado: Fatiga acumulada';
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function filtrarDias(dias, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderChart(dias);
+    }
+
+    // Inicializar por defecto con los últimos 90 días
+    window.addEventListener('DOMContentLoaded', () => {
+        renderChart(90);
+    });
+</script>
+{% endblock %}
