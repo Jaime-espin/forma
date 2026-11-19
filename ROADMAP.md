@@ -38,10 +38,10 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 
 ### Algoritmos de entrenamiento (Fase 2)
 - [x] Estudiar el modelo de Banister (TSS, ATL, CTL, TSB) e investigación científica (`RESEARCH.md`)
-- [ ] Calcular Training Stress Score (TSS) por actividad a partir de FC y esfuerzo relativo
-- [ ] Implementar curva de fitness (CTL — Chronic Training Load, 42 días)
-- [ ] Implementar curva de fatiga (ATL — Acute Training Load, 7 días)
-- [ ] Calcular forma física (TSB = CTL - ATL)
+- [x] Calcular Training Stress Score (TSS) por actividad a partir de FC y esfuerzo relativo
+- [x] Implementar curva de fitness (CTL — Chronic Training Load, 42 días)
+- [x] Implementar curva de fatiga (ATL — Acute Training Load, 7 días)
+- [x] Calcular forma física (TSB = CTL - ATL)
 
 ### Interfaz web (Flask)
 - [x] Configurar Flask con Application Factory y Blueprints

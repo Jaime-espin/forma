@@ -149,5 +149,15 @@ def obtener_streams_actividad(activity_id):
 
     return [dict(f) for f in stream]
 
+def obtener_actividades_cronologicas():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM activities ORDER BY start_date ASC')
+    actividades = [dict(fila) for fila in cursor.fetchall()]
+    conn.close()
+    return actividades
+    
+
 if __name__ == '__main__':
     crear_tablas()
