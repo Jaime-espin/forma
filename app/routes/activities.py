@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from app.database.database import obtener_actividades, obtener_actividad_por_id, obtener_streams_actividad
 from app.ingesta.stream_importer import importar_stream_actividad
-from app.database.database import obtener_actividades_cronologicas
+from app.database.database import obtener_actividades_cronologicas, obtener_resumen_volumen, obtener_volumen_semanal
 from app.models.training_load import calcular_curvas_entrenamiento
 
 # 1. Definimos el Blueprint
@@ -12,12 +12,16 @@ activities_bp = Blueprint('activities', __name__)
 # 2. Asignamos rutas con @activities_bp.route
 @activities_bp.route('/')
 def index():
+    
     actividades = obtener_actividades_cronologicas()
     curvas = calcular_curvas_entrenamiento(actividades)
+    dias = request.args.get('dias', default=28, type=int)
+    volumen = obtener_resumen_volumen(dias)
+    volumen_semanal = obtener_volumen_semanal(num_semanas=16)
 
     metrics = curvas[-1] if curvas else {'ctl': 0, 'atl': 0, 'tsb': 0, 'tss': 0, 'date': '-'}
 
-    return render_template('dashboard.html', metrics=metrics, chart_data=curvas, lthr=175)
+    return render_template('dashboard.html', metrics=metrics, chart_data=curvas, lthr=175, volumen=volumen, dias_volumen=dias, volumen_semanal=volumen_semanal)
 
 @activities_bp.route('/activities')
 def ver_actividades():

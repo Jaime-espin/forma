@@ -34,7 +34,7 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 
 ### Base de datos
 - [x] Esquema: `activities`, `streams`, `imports`
-- [ ] Índice en `streams.activity_id` para acelerar consultas de detalle
+- [x] Índice en `streams.activity_id` para acelerar consultas de detalle
 
 ### Algoritmos de entrenamiento (Fase 2)
 - [x] Estudiar el modelo de Banister (TSS, ATL, CTL, TSB) e investigación científica (`RESEARCH.md`)
@@ -47,7 +47,7 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 - [x] Configurar Flask con Application Factory y Blueprints
 - [x] Lista de actividades con métricas clave (distancia, tiempo, desnivel, FC, tipo refinado)
 - [x] Detalle de actividad: métricas + gráfica de pulso y altitud con Chart.js (carga bajo demanda del stream)
-- [ ] Dashboard principal: resumen semanal, volumen por deporte, tendencias
+- [x] Dashboard principal: resumen de volumen de 4 semanas por deporte y métricas clave
 - [x] Visualización de curvas CTL/ATL/TSB en el tiempo (Fase 2) con gráfica interactiva PMC y guía de zonas
 
 ---

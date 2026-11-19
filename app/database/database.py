@@ -48,6 +48,11 @@ def crear_tablas():
         )
     ''')
 
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_streams_activity_id 
+        ON streams(activity_id)
+    ''')
+
     # Crear tabla de imports
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS imports (
@@ -157,6 +162,61 @@ def obtener_actividades_cronologicas():
     actividades = [dict(fila) for fila in cursor.fetchall()]
     conn.close()
     return actividades
+
+def obtener_resumen_volumen(dias=28):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    # Filtramos los últimos N días tomando como referencia la fecha de tu última actividad registrada
+    cursor.execute('''
+        SELECT 
+            activity_type, 
+            COUNT(*) as sesiones, 
+            SUM(distance) as distancia, 
+            SUM(moving_time) as tiempo, 
+            SUM(elevation_gain) as desnivel 
+        FROM activities 
+        WHERE start_date >= date((SELECT max(start_date) FROM activities), ? || ' days') 
+        GROUP BY activity_type 
+        ORDER BY tiempo DESC
+    ''', (f'-{dias}',))
+    
+    resumen = [dict(fila) for fila in cursor.fetchall()]
+    conn.close()
+    return resumen
+
+def obtener_volumen_semanal(num_semanas=16):
+    """
+    Agrupa el volumen por semana (km, horas, desnivel y sesiones)
+    de las últimas N semanas.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    dias = num_semanas * 7
+    cursor.execute('''
+        SELECT 
+            strftime('%Y-W%W', start_date) as semana,
+            min(date(start_date)) as inicio_semana,
+            CASE 
+                WHEN activity_type IN ('Ciclismo', 'Gravel / MTB') THEN 'Ciclismo'
+                ELSE activity_type 
+            END as deporte,
+            count(*) as sesiones,
+            round(sum(distance) / 1000.0, 1) as km,
+            round(sum(moving_time) / 3600.0, 1) as horas,
+            round(sum(elevation_gain), 0) as desnivel
+        FROM activities
+        WHERE start_date >= date((SELECT max(start_date) FROM activities), ? || ' days')
+        GROUP BY semana, deporte
+        ORDER BY semana ASC
+    ''', (f'-{dias}',))
+
+    semanas = [dict(fila) for fila in cursor.fetchall()]
+    conn.close()
+    return semanas
     
 
 if __name__ == '__main__':

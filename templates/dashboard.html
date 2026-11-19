@@ -118,6 +118,100 @@
     </div>
 </div>
 
+<!-- Resumen de Volumen -->
+<div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--text);">Volumen de Entrenamiento</h3>
+            <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem;">
+                Totales acumulados en los últimos {{ dias_volumen | default(28) }} días por disciplina
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="display: flex; gap: 0.25rem; background: var(--bg); padding: 0.25rem; border-radius: 6px; border: 1px solid var(--border);">
+                <a href="/?dias=7" class="filter-btn {% if dias_volumen == 7 %}active{% endif %}" style="text-decoration: none;">7D</a>
+                <a href="/?dias=28" class="filter-btn {% if not dias_volumen or dias_volumen == 28 %}active{% endif %}" style="text-decoration: none;">28D</a>
+                <a href="/?dias=90" class="filter-btn {% if dias_volumen == 90 %}active{% endif %}" style="text-decoration: none;">90D</a>
+                <a href="/?dias=365" class="filter-btn {% if dias_volumen == 365 %}active{% endif %}" style="text-decoration: none;">1 Año</a>
+            </div>
+            <span class="badge" style="background-color: rgba(56, 189, 248, 0.1); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.2);">
+                Últimos {{ dias_volumen | default(28) }} días
+            </span>
+        </div>
+    </div>
+
+    <!-- Grid de deportes -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+        {% for item in volumen %}
+        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <span class="badge {% if 'carrera' in item.activity_type.lower() %}carrera{% elif 'bici' in item.activity_type.lower() or 'gravel' in item.activity_type.lower() %}bici{% elif 'esqu' in item.activity_type.lower() %}esqui{% endif %}">
+                    {{ item.activity_type }}
+                </span>
+                <span style="font-size: 0.8rem; color: var(--muted);">{{ item.sesiones }} sesiones</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; text-align: center;">
+                <div style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 4px;">
+                    <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">Distancia</div>
+                    <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-top: 0.2rem;">
+                        {% if item.distancia %}{{ (item.distancia / 1000) | round(1) }} km{% else %}-{% endif %}
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 4px;">
+                    <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">Tiempo</div>
+                    <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-top: 0.2rem;">
+                        {% set h = item.tiempo // 3600 %}
+                        {% set m = (item.tiempo % 3600) // 60 %}
+                        {{ h }}h {{ m }}m
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 4px;">
+                    <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;">Desnivel</div>
+                    <div style="font-size: 1rem; font-weight: 600; color: var(--text); margin-top: 0.2rem;">
+                        {% if item.desnivel %}+{{ item.desnivel | round(0) | int }} m{% else %}-{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div style="color: var(--muted); font-size: 0.9rem; padding: 1rem;">
+            No se han encontrado actividades en las últimas 4 semanas.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Evolución de Volumen Semanal (Estilo Strava) -->
+<div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;">
+        <div>
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--text);">Evolución de Volumen Semanal</h3>
+            <div id="weeklySubtitle" style="font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem;">
+                Comparativa multi-disciplina por semana
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <!-- Selector de Deporte -->
+            <div style="display: flex; gap: 0.25rem; background: var(--bg); padding: 0.25rem; border-radius: 6px; border: 1px solid var(--border);">
+                <button class="sport-btn active" onclick="cambiarDeporte('Todas', this)">Todas</button>
+                <button class="sport-btn" onclick="cambiarDeporte('Carrera', this)">🏃 Carrera</button>
+                <button class="sport-btn" onclick="cambiarDeporte('Ciclismo', this)">🚴 Ciclismo</button>
+                <button class="sport-btn" onclick="cambiarDeporte('Trail Running', this)">⛰️ Trail</button>
+            </div>
+            <span class="badge" style="background-color: rgba(249, 115, 22, 0.1); color: var(--accent); border: 1px solid rgba(249, 115, 22, 0.2);">
+                Últimas 16 Semanas
+            </span>
+        </div>
+    </div>
+
+    <div style="height: 340px; position: relative;">
+        <canvas id="weeklyVolumeChart"></canvas>
+    </div>
+</div>
+
 <!-- Guía de Interpretación y Zonas de Rendimiento / Riesgo -->
 <div style="background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
     <h3 style="margin: 0 0 1rem 0; font-size: 1.15rem; color: var(--text); display: flex; align-items: center; gap: 0.5rem;">
@@ -167,7 +261,7 @@
 </div>
 
 <style>
-    .filter-btn {
+    .filter-btn, .sport-btn {
         background: transparent;
         border: none;
         color: var(--muted);
@@ -178,10 +272,10 @@
         transition: all 0.2s;
         font-weight: 500;
     }
-    .filter-btn:hover {
+    .filter-btn:hover, .sport-btn:hover {
         color: var(--text);
     }
-    .filter-btn.active {
+    .filter-btn.active, .sport-btn.active {
         background-color: var(--surface);
         color: var(--primary);
         font-weight: 600;
@@ -325,9 +419,240 @@
         renderChart(dias);
     }
 
-    // Inicializar por defecto con los últimos 90 días
+    // Gráfica de Evolución Semanal (Estilo Strava)
+    const weeklyData = {{ volumen_semanal | default([]) | tojson }};
+    let chartWeeklyInstance = null;
+
+    // Extraer semanas únicas en orden cronológico
+    const uniqueWeeks = [];
+    const weekLabels = [];
+    weeklyData.forEach(row => {
+        if (!uniqueWeeks.includes(row.semana)) {
+            uniqueWeeks.push(row.semana);
+            const p = row.inicio_semana.split('-');
+            weekLabels.push(`Sem ${row.semana.split('-W')[1]} (${p[2]}/${p[1]})`);
+        }
+    });
+
+    // Crear mapa de acceso rápido: sportMap[deporte][semana] = row
+    const sportMap = {};
+    weeklyData.forEach(row => {
+        if (!sportMap[row.deporte]) {
+            sportMap[row.deporte] = {};
+        }
+        sportMap[row.deporte][row.semana] = row;
+    });
+
+    // Paleta de colores para cada disciplina
+    const configDeportes = {
+        'Carrera': { color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)', barBg: 'rgba(249, 115, 22, 0.35)' },
+        'Ciclismo': { color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', barBg: 'rgba(16, 185, 129, 0.35)' },
+        'Trail Running': { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.1)', barBg: 'rgba(56, 189, 248, 0.35)' }
+    };
+
+    function renderWeeklyChart(deporteSeleccionado) {
+        const ctx = document.getElementById('weeklyVolumeChart').getContext('2d');
+        if (chartWeeklyInstance) {
+            chartWeeklyInstance.destroy();
+        }
+
+        const subtitle = document.getElementById('weeklySubtitle');
+        let datasets = [];
+        let scales = {};
+
+        if (deporteSeleccionado === 'Todas') {
+            subtitle.textContent = 'Comparativa de distancia por deporte (líneas) y horas totales acumuladas (barras)';
+
+            // 1. Barras de horas totales semanales (sumando todas las disciplinas)
+            const totalHorasSerie = uniqueWeeks.map(w => {
+                let sumH = 0;
+                Object.keys(sportMap).forEach(dep => {
+                    if (sportMap[dep] && sportMap[dep][w]) {
+                        sumH += sportMap[dep][w].horas || 0;
+                    }
+                });
+                return Math.round(sumH * 10) / 10;
+            });
+
+            datasets.push({
+                type: 'bar',
+                label: 'Horas Totales (h)',
+                data: totalHorasSerie,
+                backgroundColor: 'rgba(148, 163, 184, 0.25)',
+                hoverBackgroundColor: 'rgba(148, 163, 184, 0.55)',
+                borderRadius: 4,
+                barPercentage: 0.5,
+                yAxisID: 'y1'
+            });
+
+            // 2. Una línea con puntos por cada deporte principal
+            ['Carrera', 'Ciclismo', 'Trail Running'].forEach(dep => {
+                const cfg = configDeportes[dep];
+                const kmSerie = uniqueWeeks.map(w => {
+                    return sportMap[dep] && sportMap[dep][w] ? sportMap[dep][w].km : 0;
+                });
+
+                datasets.push({
+                    label: `${dep} (km)`,
+                    data: kmSerie,
+                    borderColor: cfg.color,
+                    backgroundColor: cfg.bg,
+                    borderWidth: 2.5,
+                    pointBackgroundColor: cfg.color,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 1.5,
+                    pointRadius: 4.5,
+                    pointHoverRadius: 7,
+                    tension: 0.3,
+                    fill: false,
+                    yAxisID: 'y'
+                });
+            });
+
+            scales = {
+                x: {
+                    grid: { color: 'rgba(51, 65, 85, 0.4)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Distancia (km)', color: '#94a3b8' },
+                    grid: { color: 'rgba(51, 65, 85, 0.6)' },
+                    ticks: { color: '#94a3b8' },
+                    suggestedMin: 0
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Horas Totales (h)', color: '#94a3b8' },
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: '#94a3b8' },
+                    suggestedMin: 0
+                }
+            };
+        } else {
+            // Modo disciplina individual: Línea de km + Barras de tiempo
+            const cfg = configDeportes[deporteSeleccionado] || { color: '#a855f7', bg: 'rgba(168, 85, 247, 0.1)', barBg: 'rgba(168, 85, 247, 0.35)' };
+            subtitle.textContent = `Volumen de ${deporteSeleccionado}: kilómetros (puntos) y tiempo (barras)`;
+
+            const kmSerie = uniqueWeeks.map(w => {
+                return sportMap[deporteSeleccionado] && sportMap[deporteSeleccionado][w] ? sportMap[deporteSeleccionado][w].km : 0;
+            });
+            const horasSerie = uniqueWeeks.map(w => {
+                return sportMap[deporteSeleccionado] && sportMap[deporteSeleccionado][w] ? sportMap[deporteSeleccionado][w].horas : 0;
+            });
+
+            datasets = [
+                {
+                    label: `${deporteSeleccionado} (km)`,
+                    data: kmSerie,
+                    borderColor: cfg.color,
+                    backgroundColor: cfg.bg,
+                    borderWidth: 3,
+                    pointBackgroundColor: cfg.color,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    fill: true,
+                    tension: 0.3,
+                    yAxisID: 'y'
+                },
+                {
+                    type: 'bar',
+                    label: 'Tiempo (h)',
+                    data: horasSerie,
+                    backgroundColor: cfg.barBg,
+                    hoverBackgroundColor: cfg.color,
+                    borderRadius: 4,
+                    barPercentage: 0.45,
+                    yAxisID: 'y1'
+                }
+            ];
+
+            scales = {
+                x: {
+                    grid: { color: 'rgba(51, 65, 85, 0.4)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Distancia (km)', color: cfg.color },
+                    grid: { color: 'rgba(51, 65, 85, 0.6)' },
+                    ticks: { color: cfg.color },
+                    suggestedMin: 0
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Tiempo (horas)', color: '#94a3b8' },
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: '#94a3b8' },
+                    suggestedMin: 0
+                }
+            };
+        }
+
+        chartWeeklyInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: weekLabels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: scales,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#f8fafc',
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            afterBody: function(tooltipItems) {
+                                if (deporteSeleccionado !== 'Todas') {
+                                    const index = tooltipItems[0].dataIndex;
+                                    const sem = uniqueWeeks[index];
+                                    const dataRow = sportMap[deporteSeleccionado] && sportMap[deporteSeleccionado][sem];
+                                    if (dataRow) {
+                                        return [
+                                            `Sesiones: ${dataRow.sesiones} entrenos`,
+                                            `Desnivel: +${dataRow.desnivel} m`
+                                        ];
+                                    }
+                                }
+                                return [];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function cambiarDeporte(deporte, btn) {
+        document.querySelectorAll('.sport-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderWeeklyChart(deporte);
+    }
+
+    // Inicializar al cargar
     window.addEventListener('DOMContentLoaded', () => {
         renderChart(90);
+        if (weeklyData && weeklyData.length > 0) {
+            renderWeeklyChart('Todas');
+        }
     });
 </script>
 {% endblock %}
