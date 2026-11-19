@@ -29,8 +29,8 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 - [x] Extraer streams (pulso, GPS, velocidad, altitud) y convertir coordenadas a grados decimales
 - [x] Insertar streams en SQLite con `executemany`
 - [x] Detección automática del ZIP más reciente en `data/` (`utils.py`)
-- [ ] Importación de streams bajo demanda (al abrir detalle de actividad)
-- [ ] Manejo robusto de errores en FIT corruptos o con campos propietarios
+- [x] Importación de streams bajo demanda (al abrir detalle de actividad)
+- [x] Manejo robusto de errores en FIT corruptos o con campos propietarios (`FitParseError`)
 
 ### Base de datos
 - [x] Esquema: `activities`, `streams`, `imports`
@@ -44,11 +44,11 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 - [ ] Calcular forma física (TSB = CTL - ATL)
 
 ### Interfaz web (Flask)
-- [ ] Configurar Flask con Application Factory y Blueprints
+- [x] Configurar Flask con Application Factory y Blueprints
+- [x] Lista de actividades con métricas clave (distancia, tiempo, desnivel, FC, tipo refinado)
+- [x] Detalle de actividad: métricas + gráfica de pulso y altitud con Chart.js (carga bajo demanda del stream)
 - [ ] Dashboard principal: resumen semanal, volumen por deporte, tendencias
-- [ ] Lista de actividades con filtros (deporte, fecha, distancia)
-- [ ] Detalle de actividad: métricas + gráfica de pulso/ritmo (carga bajo demanda del stream)
-- [ ] Visualización de curvas CTL/ATL/TSB en el tiempo
+- [ ] Visualización de curvas CTL/ATL/TSB en el tiempo (Fase 2)
 
 ---
 

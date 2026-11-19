@@ -34,29 +34,34 @@ def leer_actividad():
 def extraer_puntos_fit(contenido_fit, activity_id):
     fitfile = fitparse.FitFile(contenido_fit)
     puntos = []
-    for record in fitfile.get_messages('record'):
-        # Cada record tiene valores:
-        datos = record.get_values()
-        ts = datos.get('timestamp')
-        if not ts:
-            continue  # Si un punto no tiene fecha/hora, no nos sirve
-        ts_str = ts.isoformat() if hasattr(ts, 'isoformat') else str(ts)
+    try:
+        for record in fitfile.get_messages('record'):
+            # Cada record tiene valores:
+            datos = record.get_values()
+            ts = datos.get('timestamp')
+            if not ts:
+                continue  # Si un punto no tiene fecha/hora, no nos sirve
+            ts_str = ts.isoformat() if hasattr(ts, 'isoformat') else str(ts)
 
-        hr = datos.get('heart_rate')
-        vel = datos.get('enhanced_speed') or datos.get('speed')
+            hr = datos.get('heart_rate')
+            vel = datos.get('enhanced_speed') or datos.get('speed')
 
-        lat = datos.get('position_lat')
-        lon = datos.get('position_long')
-        if lat is not None and lon is not None:
-            lat = round(lat * (180 / (2**31)), 7)
-            lon = round(lon * (180 / (2**31)), 7)
+            lat = datos.get('position_lat')
+            lon = datos.get('position_long')
+            if lat is not None and lon is not None:
+                lat = round(lat * (180 / (2**31)), 7)
+                lon = round(lon * (180 / (2**31)), 7)
 
-        alt = datos.get('enhanced_altitude') or datos.get('altitude')
-        cad = datos.get('cadence')
-        power = datos.get('power')
+            alt = datos.get('enhanced_altitude') or datos.get('altitude')
+            cad = datos.get('cadence')
+            power = datos.get('power')
 
-        punto = (activity_id, ts_str, hr, vel, lat, lon, alt, cad, power)
-        puntos.append(punto)
+            punto = (activity_id, ts_str, hr, vel, lat, lon, alt, cad, power)
+            puntos.append(punto)
+    except fitparse.FitParseError as e:
+        # Si llega a un campo de desarrollador que no sabe leer,
+        # no reventamos la app: nos quedamos con todos los puntos que ya extrajimos
+        print(f"Aviso: FIT con campos no estándar en actividad {activity_id}. Puntos leídos: {len(puntos)}")
     return puntos
 
 def importar_stream_actividad(activity_id, stream_filename):

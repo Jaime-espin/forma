@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="/activities" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">
+        &larr; Volver a actividades
+    </a>
+</div>
+
+<!-- Cabecera de la actividad -->
+<div style="background-color: var(--surface); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <span class="badge">{{ actividad.activity_type }}</span>
+                <span style="color: var(--muted); font-size: 0.85rem;">{{ actividad.start_date[:10] }} a las {{ actividad.start_date[11:16] }}</span>
+            </div>
+            <h2 style="margin: 0; font-size: 1.75rem; color: var(--text);">{{ actividad.name }}</h2>
+            {% if actividad.description %}
+            <p style="color: var(--muted); margin: 0.75rem 0 0 0; font-size: 0.95rem; white-space: pre-line;">{{ actividad.description }}</p>
+            {% endif %}
+        </div>
+        {% if actividad.relative_effort %}
+        <div style="text-align: right; background: rgba(249, 115, 22, 0.1); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid rgba(249, 115, 22, 0.2);">
+            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Esfuerzo Relativo</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">{{ actividad.relative_effort | round(0) | int }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Rejilla de métricas principales -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+        <div>
+            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Distancia</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
+                {% if actividad.distance %}{{ (actividad.distance / 1000) | round(2) }} km{% else %}-{% endif %}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Tiempo</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
+                {% if actividad.moving_time %}
+                    {% set h = actividad.moving_time // 3600 %}
+                    {% set m = (actividad.moving_time % 3600) // 60 %}
+                    {% set s = actividad.moving_time % 60 %}
+                    {% if h > 0 %}{{ h }}h {{ m }}m{% else %}{{ m }}m {{ s }}s{% endif %}
+                {% else %}-{% endif %}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Desnivel (+)</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
+                {% if actividad.elevation_gain %}+{{ actividad.elevation_gain | round(0) | int }} m{% else %}-{% endif %}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">FC Media / Máx</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
+                {% if actividad.avg_heart_rate %}
+                    {{ actividad.avg_heart_rate | round(0) | int }} / {{ actividad.max_heart_rate | round(0) | int }} ppm
+                {% else %}-{% endif %}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Ritmo Medio</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
+                {% if actividad.avg_speed and actividad.avg_speed > 0 %}
+                    <!-- m/s a min/km: 1000 / avg_speed / 60 -->
+                    {% set sec_km = 1000 / actividad.avg_speed %}
+                    {% set ritmo_min = sec_km // 60 %}
+                    {% set ritmo_sec = sec_km % 60 %}
+                    {{ ritmo_min | int }}:{{ "%02d" | format(ritmo_sec | int) }} /km
+                {% else %}-{% endif %}
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Calorías</div>
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
+                {% if actividad.calories %}{{ actividad.calories | round(0) | int }} kcal{% else %}-{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfica de Telemetría (Streams) -->
+<div style="background-color: var(--surface); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+    <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text);">Telemetría (Frecuencia Cardíaca y Altitud)</h3>
+
+    {% if streams and streams|length > 0 %}
+    <div style="height: 350px; position: relative;">
+        <canvas id="streamChart"></canvas>
+    </div>
+
+    <!-- Chart.js vía CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('streamChart').getContext('2d');
+        
+        // Datos inyectados desde Python
+        const labels = {{ chart_labels | tojson }};
+        const hrData = {{ chart_hr | tojson }};
+        const altData = {{ chart_alt | tojson }};
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Frecuencia Cardíaca (ppm)',
+                        data: hrData,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Altitud (m)',
+                        data: altData,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.05)',
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 12 }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Pulsaciones (ppm)', color: '#f97316' },
+                        grid: { color: '#334155' },
+                        ticks: { color: '#f97316' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Altitud (m)', color: '#38bdf8' },
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#38bdf8' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#f8fafc' }
+                    }
+                }
+            }
+        });
+    </script>
+    {% else %}
+    <div style="text-align: center; color: var(--muted); padding: 3rem;">
+        Esta actividad no tiene archivo de stream o datos segundo a segundo disponibles.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

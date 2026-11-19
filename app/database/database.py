@@ -127,6 +127,27 @@ def obtener_actividades(limite=50):
     conn.close()
     return actividades
 
+def obtener_actividad_por_id(activity_id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM activities WHERE id = ?', (activity_id,))
+    activity = cursor.fetchone()
+    conn.close()
+
+    if activity is None:
+        return None
+    return dict(activity)
+
+def obtener_streams_actividad(activity_id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM streams WHERE activity_id = ? ORDER BY timestamp ASC', (activity_id,))
+    stream = cursor.fetchall()
+    conn.close()
+
+    return [dict(f) for f in stream]
 
 if __name__ == '__main__':
     crear_tablas()
