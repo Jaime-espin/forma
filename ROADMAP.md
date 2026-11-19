@@ -37,7 +37,7 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 - [ ] Índice en `streams.activity_id` para acelerar consultas de detalle
 
 ### Algoritmos de entrenamiento (Fase 2)
-- [ ] Estudiar el modelo de Banister (TSS, ATL, CTL, TSB)
+- [x] Estudiar el modelo de Banister (TSS, ATL, CTL, TSB) e investigación científica (`RESEARCH.md`)
 - [ ] Calcular Training Stress Score (TSS) por actividad a partir de FC y esfuerzo relativo
 - [ ] Implementar curva de fitness (CTL — Chronic Training Load, 42 días)
 - [ ] Implementar curva de fatiga (ATL — Acute Training Load, 7 días)
@@ -53,6 +53,10 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 ---
 
 ## Backlog — Features futuras (post-MVP)
+
+### Métricas avanzadas de carga (post-MVP)
+- [ ] ACWR (Acute:Chronic Workload Ratio) para estimar picos de carga y riesgo de lesión
+- [ ] Soporte para hrTSS zonal por tiempo en zonas o rTSS basado en ritmo
 
 ### Heatmap personal
 - [ ] Acumular puntos GPS de todos los streams en una cuadrícula de coordenadas
