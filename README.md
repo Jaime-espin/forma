@@ -65,10 +65,16 @@ python3 -m app.ingesta.csv_importer
 
 ---
 
+## Demo
+
+![FORMA Dashboard Demo](docs/assets/demo.gif)
+
+---
+
 ## Status
 
-Data layer complete. Web interface in progress.  
-See [`ROADMAP.md`](ROADMAP.md) for the full plan.
+MVP complete: Ingestion pipeline (Strava ZIP + Drop Folder FIT), SQLite database with direct SQL, Banister training load model (hrTSS, CTL, ATL, TSB), and interactive performance dashboard.  
+See [`ROADMAP.md`](ROADMAP.md) for the full plan and next milestones.
 
 ---
 

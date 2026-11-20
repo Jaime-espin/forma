@@ -16,7 +16,7 @@
             <th style="text-align: right;">Tiempo</th>
             <th style="text-align: right;">Desnivel</th>
             <th style="text-align: right;">FC Media</th>
-            <th style="text-align: right;">Esfuerzo</th>
+            <th style="text-align: right;">TSS</th>
         </tr>
     </thead>
     <tbody>
@@ -81,9 +81,11 @@
                 {% endif %}
             </td>
 
-            <!-- Esfuerzo Relativo -->
-            <td class="metric-num" style="text-align: right; color: var(--accent); font-weight: 600;">
-                {% if act.relative_effort %}
+            <!-- TSS -->
+            <td class="metric-num" style="text-align: right; color: var(--primary); font-weight: 600;">
+                {% if act.tss %}
+                    {{ act.tss | round(1) }}
+                {% elif act.relative_effort %}
                     {{ act.relative_effort | round(0) | int }}
                 {% else %}
                     -

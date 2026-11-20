@@ -24,6 +24,7 @@ def crear_tablas():
             max_heart_rate REAL,
             calories REAL,
             relative_effort REAL,
+            tss REAL,
             stream_filename TEXT,
             description TEXT,
             imported_at TEXT NOT NULL,
@@ -81,15 +82,15 @@ def insertar_actividades(actividades,  source='zip', filename=''):
                 id, name, activity_type, start_date, elapsed_time, moving_time,
                 distance, elevation_gain, avg_speed, max_speed, avg_heart_rate,
                 max_heart_rate, calories, relative_effort, stream_filename,
-                description, imported_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                description, imported_at, tss
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             actividad.get('id'), actividad.get('name'), actividad.get('activity_type'),
             actividad.get('start_date'), actividad.get('elapsed_time'), actividad.get('moving_time'),
             actividad.get('distance'), actividad.get('elevation_gain'), actividad.get('avg_speed'),
             actividad.get('max_speed'), actividad.get('avg_heart_rate'), actividad.get('max_heart_rate'),
             actividad.get('calories'), actividad.get('relative_effort'), actividad.get('stream_filename'),
-            actividad.get('description'), imported_at
+            actividad.get('description'), imported_at, actividad.get('tss')
         ))
 
     cambios = conn.total_changes

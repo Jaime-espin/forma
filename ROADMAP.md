@@ -31,6 +31,8 @@ La versión mínima: una web que importe el historial de Strava, aplique modelos
 - [x] Detección automática del ZIP más reciente en `data/` (`utils.py`)
 - [x] Importación de streams bajo demanda (al abrir detalle de actividad)
 - [x] Manejo robusto de errores en FIT corruptos o con campos propietarios (`FitParseError`)
+- [x] Ingesta para el día a día sin ZIP: Drop Folder (`data/incoming/`) para archivos `.fit` con archivado automático
+- [x] Persistencia de métrica propia: columna `tss` en tabla `activities` calculada y migrada para todo el historial
 
 ### Base de datos
 - [x] Esquema: `activities`, `streams`, `imports`

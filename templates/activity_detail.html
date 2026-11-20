@@ -20,7 +20,12 @@
             <p style="color: var(--muted); margin: 0.75rem 0 0 0; font-size: 0.95rem; white-space: pre-line;">{{ actividad.description }}</p>
             {% endif %}
         </div>
-        {% if actividad.relative_effort %}
+        {% if actividad.tss %}
+        <div style="text-align: right; background: rgba(56, 189, 248, 0.1); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
+            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Carga de Entrenamiento</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">{{ actividad.tss | round(1) }} <span style="font-size: 0.85rem; font-weight: 500;">TSS</span></div>
+        </div>
+        {% elif actividad.relative_effort %}
         <div style="text-align: right; background: rgba(249, 115, 22, 0.1); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid rgba(249, 115, 22, 0.2);">
             <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Esfuerzo Relativo</div>
             <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">{{ actividad.relative_effort | round(0) | int }}</div>
