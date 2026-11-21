@@ -67,16 +67,26 @@
             </div>
         </div>
         <div>
-            <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Ritmo Medio</div>
-            <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
-                {% if actividad.avg_speed and actividad.avg_speed > 0 %}
-                    <!-- m/s a min/km: 1000 / avg_speed / 60 -->
-                    {% set sec_km = 1000 / actividad.avg_speed %}
-                    {% set ritmo_min = sec_km // 60 %}
-                    {% set ritmo_sec = sec_km % 60 %}
-                    {{ ritmo_min | int }}:{{ "%02d" | format(ritmo_sec | int) }} /km
-                {% else %}-{% endif %}
-            </div>
+            {% set tipo = actividad.activity_type | lower %}
+            {% if 'ciclismo' in tipo or 'bici' in tipo or 'gravel' in tipo or 'mtb' in tipo or 'esqu' in tipo %}
+                <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Velocidad Media</div>
+                <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
+                    {% if actividad.avg_speed and actividad.avg_speed > 0 %}
+                        {{ (actividad.avg_speed * 3.6) | round(1) }} km/h
+                    {% else %}-{% endif %}
+                </div>
+            {% else %}
+                <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Ritmo Medio</div>
+                <div style="font-size: 1.25rem; font-weight: 600; color: var(--text);">
+                    {% if actividad.avg_speed and actividad.avg_speed > 0 %}
+                        <!-- m/s a min/km: 1000 / avg_speed / 60 -->
+                        {% set sec_km = 1000 / actividad.avg_speed %}
+                        {% set ritmo_min = sec_km // 60 %}
+                        {% set ritmo_sec = sec_km % 60 %}
+                        {{ ritmo_min | int }}:{{ "%02d" | format(ritmo_sec | int) }} /km
+                    {% else %}-{% endif %}
+                </div>
+            {% endif %}
         </div>
         <div>
             <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Calorías</div>

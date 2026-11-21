@@ -3,6 +3,7 @@ from app.database.database import obtener_actividades, obtener_actividad_por_id,
 from app.ingesta.stream_importer import importar_stream_actividad
 from app.database.database import obtener_actividades_cronologicas, obtener_resumen_volumen, obtener_volumen_semanal
 from app.models.training_load import calcular_curvas_entrenamiento
+from app.ingesta.fit_importer import sincronizar_incoming
 
 # 1. Definimos el Blueprint
 # 'activities': nombre interno del blueprint
@@ -12,7 +13,7 @@ activities_bp = Blueprint('activities', __name__)
 # 2. Asignamos rutas con @activities_bp.route
 @activities_bp.route('/')
 def index():
-    
+    sincronizar_incoming()
     actividades = obtener_actividades_cronologicas()
     curvas = calcular_curvas_entrenamiento(actividades)
     dias = request.args.get('dias', default=28, type=int)
@@ -26,6 +27,7 @@ def index():
 @activities_bp.route('/activities')
 def ver_actividades():
     # Esta función se ejecutará CADA VEZ que alguien visite /activities
+    sincronizar_incoming()
     actividades = obtener_actividades()
     return render_template('activities.html', actividades=actividades)
 
